@@ -1,31 +1,37 @@
 """
-Optimización por Enjambre de Partículas (PSO) para minimizar una función continua.
+Optimización por Enjambre de Partículas (PSO) para el DISEÑO DE UN RESORTE
+de tensión/compresión (problema clásico de optimización en ingeniería).
 
 Metaheurística:  Particle Swarm Optimization (PSO)
-Problema:        Minimizar una función benchmark (por defecto Rastrigin en 2D).
-Papers base:     Kennedy, J. & Eberhart, R. (1995). "Particle swarm optimization".
-                 Proc. IEEE Int. Conf. on Neural Networks, 1942-1948.
-                 DOI: 10.1109/ICNN.1995.488968
-                 Poli, R., Kennedy, J. & Blackwell, T. (2007). "Particle swarm
-                 optimization: An overview". Swarm Intelligence, 1(1), 33-57.
-                 DOI: 10.1007/s11721-007-0002-0
-                 Shi, Y. & Eberhart, R. (1998). "A modified particle swarm
-                 optimizer" (introduce el peso de inercia w). DOI: 10.1109/ICEC.1998.699146
+Problema:        Diseño de resorte de tensión/compresión -> minimizar su PESO
+                 sujeto a restricciones mecánicas.
+Paper de aplicación:
+                 He, Q. & Wang, L. (2007). "An effective co-evolutionary particle
+                 swarm optimization for constrained engineering design problems".
+                 Engineering Applications of Artificial Intelligence, 20(1), 89-99.
+                 DOI: 10.1016/j.engappai.2006.03.003
+Papers base del método:
+                 Kennedy & Eberhart (1995), DOI: 10.1109/ICNN.1995.488968
+                 Poli, Kennedy & Blackwell (2007), DOI: 10.1007/s11721-007-0002-0
+                 Shi & Eberhart (1998), DOI: 10.1109/ICEC.1998.699146
 
-Idea del algoritmo:
-  Un "enjambre" de partículas vuela por el espacio de búsqueda. Cada partícula i
-  tiene posición x_i y velocidad v_i, y recuerda la mejor posición que visitó
-  (pbest_i). El enjambre comparte la mejor posición de todos (gbest). En cada paso:
+El problema (3 variables de diseño):
+    x1 = d : diámetro del alambre            (0.05 .. 2.00)
+    x2 = D : diámetro medio de la espira      (0.25 .. 1.30)
+    x3 = N : número de espiras activas        (2.00 .. 15.00)
 
-      v_i = w * v_i  +  c1 * r1 * (pbest_i - x_i)  +  c2 * r2 * (gbest - x_i)
-      x_i = x_i + v_i
+    Minimizar  f(x) = (x3 + 2) * x2 * x1^2          (peso del resorte)
 
-  donde w = inercia, c1 = componente cognitiva (memoria propia),
-  c2 = componente social (atracción al mejor global), r1, r2 ~ U(0,1).
+    sujeto a 4 restricciones g_i(x) <= 0 (deflexión, esfuerzo, frecuencia,
+    diámetro exterior). El mejor valor conocido es f ≈ 0.012665.
+
+Manejo de restricciones: PSO no las trata directamente, así que usamos una
+FUNCIÓN DE PENALIZACIÓN: a las soluciones que violan restricciones les sumamos
+un castigo grande, de modo que el enjambre las evite y busque soluciones válidas.
 
 Ejecutar:  python codes/pso_function.py
-Genera:    slides/figures/pso_enjambre_iter.png
-           slides/figures/pso_convergencia.png
+Genera:    slides/figures/pso_convergencia.png
+           slides/figures/pso_variables.png
 """
 
 import os
@@ -39,119 +45,132 @@ os.makedirs(FIG_DIR, exist_ok=True)
 
 rng = np.random.default_rng(42)
 
-
-# --------------------------------------------------------------------------- #
-# 1. Función objetivo (problema a resolver)
-#    Rastrigin: muy "ondulada", con muchos mínimos locales y el mínimo global
-#    en el origen, donde f = 0. Es un test clásico de optimización.
-# --------------------------------------------------------------------------- #
-def rastrigin(X):
-    X = np.atleast_2d(X)
-    A = 10.0
-    return A * X.shape[1] + np.sum(X ** 2 - A * np.cos(2 * np.pi * X), axis=1)
-
-
-BOUNDS = (-5.12, 5.12)   # dominio típico de Rastrigin
-DIM = 2                  # 2D para poder dibujar el enjambre
+# Límites de cada variable de diseño  [d, D, N]
+LO = np.array([0.05, 0.25, 2.0])
+HI = np.array([2.00, 1.30, 15.0])
+DIM = 3
+PENALTY = 1.0e6          # castigo por violar restricciones
+OPTIMO_CONOCIDO = 0.012665
 
 
 # --------------------------------------------------------------------------- #
-# 2. PSO
+# 1. El problema: peso del resorte y sus restricciones
 # --------------------------------------------------------------------------- #
-def pso(func, n_part=30, n_iter=60, w_start=0.9, w_end=0.4, c1=1.5, c2=1.5,
-        bounds=BOUNDS, dim=DIM, snap_iters=(0, 5, 20, 59), verbose=True):
-    # Peso de inercia DECRECIENTE (Shi & Eberhart, 1998): empieza alto para
-    # explorar mucho y baja para afinar al final. Evita la convergencia prematura.
-    lo, hi = bounds
-    v_max = 0.2 * (hi - lo)
+def peso(x):
+    """Función objetivo: peso del resorte (queremos minimizarlo)."""
+    d, D, N = x[..., 0], x[..., 1], x[..., 2]
+    return (N + 2) * D * d ** 2
 
-    # Inicialización aleatoria de posiciones y velocidades.
-    x = rng.uniform(lo, hi, size=(n_part, dim))
-    v = rng.uniform(-v_max, v_max, size=(n_part, dim))
+
+def restricciones(x):
+    """Devuelve las 4 restricciones g_i(x); son válidas cuando g_i <= 0."""
+    d, D, N = x[..., 0], x[..., 1], x[..., 2]
+    g1 = 1 - (D ** 3 * N) / (71785 * d ** 4)
+    g2 = (4 * D ** 2 - d * D) / (12566 * (D * d ** 3 - d ** 4)) \
+        + 1 / (5108 * d ** 2) - 1
+    g3 = 1 - 140.45 * d / (D ** 2 * N)
+    g4 = (d + D) / 1.5 - 1
+    return np.stack([g1, g2, g3, g4], axis=-1)
+
+
+def es_factible(x):
+    """True si la solución cumple TODAS las restricciones."""
+    return np.all(restricciones(x) <= 0, axis=-1)
+
+
+def fitness(x):
+    """Peso + penalización por cada restricción violada (la guía del PSO)."""
+    g = restricciones(x)
+    violacion = np.sum(np.maximum(0.0, g) ** 2, axis=-1)
+    return peso(x) + PENALTY * violacion
+
+
+# --------------------------------------------------------------------------- #
+# 2. PSO con peso de inercia decreciente (Shi & Eberhart)
+# --------------------------------------------------------------------------- #
+def pso(n_part=40, n_iter=100, w_start=0.9, w_end=0.4, c1=1.5, c2=1.5,
+        log_iters=(0, 1, 2, 5, 10, 25, 50, 99), verbose=True):
+    v_max = 0.2 * (HI - LO)
+
+    x = rng.uniform(LO, HI, size=(n_part, DIM))
+    v = rng.uniform(-v_max, v_max, size=(n_part, DIM))
 
     pbest = x.copy()
-    pbest_val = func(x)
-    g_idx = np.argmin(pbest_val)
+    pbest_fit = fitness(x)
+    g_idx = np.argmin(pbest_fit)
     gbest = pbest[g_idx].copy()
-    gbest_val = pbest_val[g_idx]
+    gbest_fit = pbest_fit[g_idx]
 
-    historia = [gbest_val]
-    snapshots = {}   # guardamos posiciones del enjambre en ciertas iteraciones
+    # Historia del mejor peso FACTIBLE encontrado (para graficar algo con sentido).
+    hist_peso = []
+    hist_vars = []
 
     if verbose:
-        print(f"{'iter':>4} {'gbest_x':>22} {'f(gbest)':>12}")
-        print("-" * 42)
+        print(f"{'iter':>4} {'d':>9} {'D':>9} {'N':>9} {'peso':>11} {'¿válido?':>9}")
+        print("-" * 54)
 
     for t in range(n_iter):
-        # Inercia que decrece linealmente de w_start a w_end.
         w = w_start - (w_start - w_end) * t / (n_iter - 1)
-        r1 = rng.random(size=(n_part, dim))
-        r2 = rng.random(size=(n_part, dim))
+        r1 = rng.random(size=(n_part, DIM))
+        r2 = rng.random(size=(n_part, DIM))
 
-        # Actualización de velocidad y posición.
         v = w * v + c1 * r1 * (pbest - x) + c2 * r2 * (gbest - x)
         v = np.clip(v, -v_max, v_max)
-        x = np.clip(x + v, lo, hi)
+        x = np.clip(x + v, LO, HI)
 
-        # Actualización de pbest y gbest.
-        val = func(x)
-        mejora = val < pbest_val
+        fit = fitness(x)
+        mejora = fit < pbest_fit
         pbest[mejora] = x[mejora]
-        pbest_val[mejora] = val[mejora]
-        g_idx = np.argmin(pbest_val)
-        if pbest_val[g_idx] < gbest_val:
+        pbest_fit[mejora] = fit[mejora]
+        g_idx = np.argmin(pbest_fit)
+        if pbest_fit[g_idx] < gbest_fit:
             gbest = pbest[g_idx].copy()
-            gbest_val = pbest_val[g_idx]
+            gbest_fit = pbest_fit[g_idx]
 
-        historia.append(gbest_val)
-        if t in snap_iters:
-            snapshots[t] = x.copy()
+        factible = es_factible(gbest)
+        hist_peso.append(peso(gbest) if factible else np.nan)
+        hist_vars.append(gbest.copy())
 
-        if verbose and (t in snap_iters or t < 5):
-            coord = "(" + ", ".join(f"{c:+.3f}" for c in gbest) + ")"
-            print(f"{t:>4} {coord:>22} {gbest_val:>12.5f}")
+        if verbose and t in log_iters:
+            d, D, N = gbest
+            ok = "sí" if factible else "no"
+            print(f"{t:>4} {d:>9.4f} {D:>9.4f} {N:>9.4f} "
+                  f"{peso(gbest):>11.6f} {ok:>9}")
 
     if verbose:
-        print("\nMejor solución encontrada:")
-        print("  x* =", np.round(gbest, 5), "  f(x*) =", round(float(gbest_val), 6))
-        print("  (el óptimo real es x=(0,0) con f=0)")
+        print("\nMejor diseño encontrado:")
+        print(f"  d = {gbest[0]:.5f},  D = {gbest[1]:.5f},  N = {gbest[2]:.4f}")
+        print(f"  peso = {peso(gbest):.6f}   (¿válido? "
+              f"{'sí' if es_factible(gbest) else 'no'})")
+        print(f"  óptimo conocido del paper ≈ {OPTIMO_CONOCIDO}")
 
-    return gbest, gbest_val, historia, snapshots
+    return gbest, np.array(hist_peso), np.array(hist_vars)
 
 
 # --------------------------------------------------------------------------- #
 # 3. Gráficas
 # --------------------------------------------------------------------------- #
-def plot_snapshots(func, snapshots, archivo, bounds=BOUNDS):
-    lo, hi = bounds
-    gx = np.linspace(lo, hi, 200)
-    XX, YY = np.meshgrid(gx, gx)
-    ZZ = func(np.column_stack([XX.ravel(), YY.ravel()])).reshape(XX.shape)
-
-    iters = sorted(snapshots)
-    fig, axes = plt.subplots(1, len(iters), figsize=(4 * len(iters), 4))
-    if len(iters) == 1:
-        axes = [axes]
-    for ax, t in zip(axes, iters):
-        ax.contourf(XX, YY, ZZ, levels=30, cmap="viridis")
-        pts = snapshots[t]
-        ax.scatter(pts[:, 0], pts[:, 1], c="red", s=18, edgecolors="white")
-        ax.scatter([0], [0], marker="*", c="white", s=160, edgecolors="black")
-        ax.set_title(f"iteración {t}")
-        ax.set_xlim(lo, hi); ax.set_ylim(lo, hi)
-    fig.suptitle("Enjambre de partículas convergiendo al mínimo (Rastrigin)")
+def plot_convergencia(hist_peso, archivo):
+    fig, ax = plt.subplots(figsize=(6, 4))
+    ax.plot(hist_peso, color="#2c7fb8", lw=2)
+    ax.axhline(OPTIMO_CONOCIDO, color="green", ls="--",
+               label=f"óptimo conocido ≈ {OPTIMO_CONOCIDO}")
+    ax.set_title("Convergencia de PSO — peso del resorte")
+    ax.set_xlabel("iteración"); ax.set_ylabel("mejor peso factible")
+    ax.legend(); ax.grid(alpha=0.3)
     fig.tight_layout()
     fig.savefig(os.path.join(FIG_DIR, archivo), dpi=130)
     plt.close(fig)
 
 
-def plot_convergencia(historia, archivo):
-    fig, ax = plt.subplots(figsize=(6, 4))
-    ax.plot(historia, color="#2c7fb8")
-    ax.set_title("Convergencia de PSO")
-    ax.set_xlabel("iteración"); ax.set_ylabel("mejor f(gbest)")
-    ax.set_yscale("symlog")
-    ax.grid(alpha=0.3)
+def plot_variables(hist_vars, archivo):
+    nombres = ["d  (diám. alambre)", "D  (diám. espira)", "N  (nº espiras)"]
+    fig, axes = plt.subplots(1, 3, figsize=(12, 3.6))
+    for i, ax in enumerate(axes):
+        ax.plot(hist_vars[:, i], color="#d95f0e", lw=2)
+        ax.set_title(nombres[i])
+        ax.set_xlabel("iteración"); ax.grid(alpha=0.3)
+    fig.suptitle("Las 3 variables de diseño se estabilizan en el óptimo")
     fig.tight_layout()
     fig.savefig(os.path.join(FIG_DIR, archivo), dpi=130)
     plt.close(fig)
@@ -162,13 +181,13 @@ def plot_convergencia(historia, archivo):
 # --------------------------------------------------------------------------- #
 def main():
     print("=" * 60)
-    print(" PSO minimizando la función Rastrigin (2D)  -  paso a paso")
+    print(" PSO — Diseño de un resorte de tensión/compresión (paso a paso)")
     print("=" * 60)
 
-    gbest, gbest_val, historia, snapshots = pso(rastrigin)
+    gbest, hist_peso, hist_vars = pso()
 
-    plot_snapshots(rastrigin, snapshots, "pso_enjambre_iter.png")
-    plot_convergencia(historia, "pso_convergencia.png")
+    plot_convergencia(hist_peso, "pso_convergencia.png")
+    plot_variables(hist_vars, "pso_variables.png")
 
     print(f"\nFiguras guardadas en: {os.path.abspath(FIG_DIR)}")
 

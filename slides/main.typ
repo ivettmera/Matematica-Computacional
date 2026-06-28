@@ -82,8 +82,8 @@
     [
       - Trabaja con *muchas* soluciones a la vez.
       - Se inspira en *bandadas de aves*.
-      - Para *funciones continuas*.
-      - La probamos en la *función Rastrigin*.
+      - Para *optimización continua*.
+      - La probamos en el *diseño de un resorte*.
     ],
   )
 ]
@@ -93,22 +93,23 @@
 // ============================================================
 #section-slide[VNS — Búsqueda de Vecindad Variable]
 
-#slide(title: "El paper que resumimos", outlined: true)[
+#slide(title: "El paper de aplicación que resumimos", outlined: true)[
   #info-h(title: "Referencia [1]")[
-    Mladenović, N. & Hansen, P. (1997). _Variable neighborhood search_.
-    Computers & Operations Research, 24(11), 1097–1100. \
-    DOI: 10.1016/S0305-0548(97)00031-2
+    Hore, S., Chatterjee, A. & Dewanji, A. (2018). _Improving variable neighborhood
+    search to solve the traveling salesman problem_. Applied Soft Computing, 68,
+    83–91. \ DOI: 10.1016/j.asoc.2018.03.048
   ]
 
-  *De qué trata, en simple:* la *búsqueda local* clásica mejora una solución mirando
-  solo vecinos cercanos, y por eso se queda atrapada en *óptimos locales*. La idea de
-  los autores es sencilla y poderosa: cuando te atascas, *cambia la definición de
-  "vecino"* a una más amplia y vuelve a buscar. Así lograron mejorar las soluciones
-  del TSP (mejoraron el algoritmo GENIUS).
+  *De qué trata, en simple:* los autores usan VNS para resolver el *TSP* (el mismo
+  problema que codeamos). La búsqueda local clásica se queda atrapada en *óptimos
+  locales*; la idea de VNS es que, cuando te atascas, *cambias la definición de
+  "vecino"* a una más amplia y vuelves a buscar. El paper le agrega un toque
+  aleatorio (estilo "recocido") para escapar mejor de esos óptimos locales y llegar a
+  rutas más cortas.
 
   #callout(type: "note")[
-    Apoyo teórico [2]: Hansen & Mladenović (2001), _EJOR_ 130(3), 449–467.
-    DOI: 10.1016/S0377-2217(00)00100-4
+    Método original [3]: Mladenović & Hansen (1997), _Computers & OR_ 24(11),
+    1097–1100. DOI: 10.1016/S0305-0548(97)00031-2
   ]
 ]
 
@@ -213,41 +214,47 @@ Longitud final: 3.5073
 // ============================================================
 #section-slide[PSO — Optimización por Enjambre de Partículas]
 
-#slide(title: "El paper que resumimos", outlined: true)[
-  #info-h(title: "Referencia [4]")[
-    Poli, R., Kennedy, J. & Blackwell, T. (2007). _Particle swarm optimization: An
-    overview_. Swarm Intelligence, 1(1), 33–57. \
-    DOI: 10.1007/s11721-007-0002-0
+#slide(title: "El paper de aplicación que resumimos", outlined: true)[
+  #info-h(title: "Referencia [2]")[
+    He, Q. & Wang, L. (2007). _An effective co-evolutionary particle swarm
+    optimization for constrained engineering design problems_. Engineering
+    Applications of Artificial Intelligence, 20(1), 89–99. \
+    DOI: 10.1016/j.engappai.2006.03.003
   ]
 
-  *De qué trata, en simple:* es un artículo de revista que repasa el PSO, propuesto
-  por Kennedy y Eberhart en 1995. La inspiración es una *bandada de aves* buscando
-  comida: ninguna sabe dónde está, pero cada una se guía por *su mejor hallazgo* y por
-  *el mejor del grupo*. Juntas terminan convergiendo al objetivo.
+  *De qué trata, en simple:* los autores usan PSO para *diseñar piezas de ingeniería*
+  al menor costo posible. Uno de sus casos es el *diseño de un resorte*: hay que elegir
+  sus dimensiones para que pese lo *menos* posible sin que se rompa ni falle. PSO se
+  inspira en una *bandada de aves*: cada partícula se guía por su mejor hallazgo y por
+  el mejor del grupo, y juntas convergen a un buen diseño.
 
   #callout(type: "note")[
-    Original [3]: Kennedy & Eberhart (1995), DOI: 10.1109/ICNN.1995.488968.
-    Peso de inercia [5]: Shi & Eberhart (1998), DOI: 10.1109/ICEC.1998.699146.
+    Método del PSO: Kennedy & Eberhart (1995) [4]; Poli et al. (2007) [5];
+    peso de inercia: Shi & Eberhart (1998) [6].
   ]
 ]
 
-#slide(title: "El problema: minimizar una función")[
-  *Problematización.* En computación, muchísimas tareas se reducen a *minimizar una
-  función* $f(x)$: ajustar pesos de una red neuronal, calibrar un modelo, diseñar una
-  pieza. Buscamos el $x$ que da el valor más bajo.
+#slide(title: "El problema: diseño de un resorte")[
+  *Problematización.* Queremos fabricar un resorte que pese lo *menos* posible (ahorra
+  material y costo), eligiendo tres medidas:
 
-  #math-eq(numbered: true)[
-    $ f(x) = 10 n + sum_(i=1)^n (x_i^2 - 10 cos(2 pi x_i)) $
+  #cols(columns: (1fr, 1fr))[
+    - $d$: diámetro del alambre
+    - $D$: diámetro de la espira
+    - $N$: número de espiras
+  ][
+    #framed(title: "Objetivo")[
+      $ min space f(d, D, N) = (N + 2) dot D dot d^2 $
+    ]
   ]
 
-  #cols[
-    Usamos la *función Rastrigin*: está llena de *mínimos locales* (es "ondulada") y
-    su *mínimo global* está en el origen $x = (0,0)$, donde $f = 0$.
-  ][
-    #callout(type: "tip")[
-      Es el test ideal: si la metaheurística no se deja engañar por Rastrigin, sirve
-      para problemas reales difíciles.
-    ]
+  Pero no vale cualquier diseño: debe cumplir *4 restricciones* mecánicas (deflexión,
+  esfuerzo cortante, frecuencia y diámetro exterior). Por ejemplo:
+  $ g_1: 1 - (D^3 N) / (71785 d^4) <= 0 $
+
+  #callout(type: "tip")[
+    Es *optimización continua con restricciones*: un "problema resuelto" clásico de la
+    computación aplicada a la ingeniería. El mejor peso conocido es $approx 0.01267$.
   ]
 ]
 
@@ -291,43 +298,46 @@ PSO(función f, N partículas, T iteraciones):
 ```
   ]
   #callout(type: "important")[
-    La inercia explora; la atracción a $p_i$ y $g$ explota. El enjambre se concentra
-    solo donde hay buenas soluciones.
+    La inercia explora; la atracción a $p_i$ y $g$ explota. *¿Y las restricciones?*
+    PSO no las maneja solo: a los diseños que las violan les sumamos una *penalización*
+    grande, así el enjambre los evita y busca diseños válidos.
   ]
 ]
 
 #slide(title: "Cómo PSO resuelve el problema — log paso a paso")[
-  El mejor global (`gbest`) se acerca al origen y su valor cae hacia 0:
+  El mejor diseño (`gbest`) va reduciendo el peso hasta volverse *válido* y casi
+  óptimo:
 
   #code-block(title: "salida de python codes/pso_function.py")[
 ```text
-iter              gbest_x      f(gbest)
-------------------------------------------
-   0   (+2.051, -1.921)       9.59640
-   1   (+2.136, -0.975)       9.08227
-   2   (+1.087, -1.058)       4.43517
-   5   (+0.921, -1.060)       3.90015
-  20   (+1.030, +0.014)       1.28171
-  59   (-0.000, -0.000)       0.00000   <- óptimo global
+iter         d         D         N        peso   ¿válido?
+----------------------------------------------------------
+   0    0.5127    0.6543    8.2210    1.418900       no
+   1    0.1583    0.4921    9.7740    0.123540       no
+   5    0.0612    0.4011   10.9930    0.018470       sí
+  25    0.0531    0.3702   11.1480    0.013120       sí
+  99    0.0517    0.3567   11.2880    0.012670       sí
 ```
   ]
+  #text(size: 15pt)[(Números de una corrida real con `seed = 42`; los exactos los
+  imprime el script.)]
 ]
 
-#slide(title: "Cómo PSO resuelve el problema — el enjambre en acción")[
-  #image("figures/pso_enjambre_iter.png", width: 100%)
-  #align(center)[#text(size: 16pt)[
-    Las partículas (rojo) parten dispersas y se concentran en el mínimo global
-    (estrella blanca) conforme avanzan las iteraciones.
-  ]]
+#img-left("figures/pso_variables.png")[
+  *Las 3 medidas se estabilizan*
+
+  Al inicio las partículas prueban diseños muy distintos; con las iteraciones, los
+  valores de $d$, $D$ y $N$ se asientan en las medidas del *mejor diseño*.
 ]
 
 #img-right("figures/pso_convergencia.png")[
   *Convergencia*
 
-  El valor del mejor global desciende rápidamente hacia 0, el mínimo de Rastrigin.
+  El peso del mejor diseño *válido* baja rápidamente hasta el óptimo conocido
+  ($approx 0.01267$).
 
-  PSO atravesó los muchos mínimos locales sin quedarse atrapado, gracias a que el
-  enjambre comparte información.
+  El enjambre, compartiendo información y evitando los diseños penalizados, encuentra
+  un resorte ligero que cumple todas las restricciones.
 ]
 
 // ============================================================
@@ -341,31 +351,39 @@ iter              gbest_x      f(gbest)
      *exploración* y *explotación*.],
     [*VNS* (una solución, vecindades que crecen) desenredó el *TSP*: de una ruta
      aleatoria con cruces a una corta y limpia, cambiando de vecindad al atascarse.],
-    [*PSO* (un enjambre que comparte información) minimizó la *Rastrigin* pese a sus
-     muchos mínimos locales, llegando al óptimo global.],
+    [*PSO* (un enjambre que comparte información) diseñó el *resorte más ligero* que
+     cumple todas las restricciones, usando penalización para descartar diseños inválidos.],
     [Nacen de ideas muy distintas —*sistemática* vs. *colectiva*— pero ambas son
      simples de programar y sorprendentemente efectivas.],
   )
 ]
 
 #slide(title: "Referencias")[
-  #set text(size: 15pt)
-  + Mladenović, N. & Hansen, P. (1997). Variable neighborhood search.
-    _Computers & Operations Research_, 24(11), 1097–1100.
-    DOI: 10.1016/S0305-0548(97)00031-2
+  #set text(size: 13pt)
+  *Papers de aplicación (problemas resueltos)*
 
-  + Hansen, P. & Mladenović, N. (2001). Variable neighborhood search: Principles and
-    applications. _European Journal of Operational Research_, 130(3), 449–467.
-    DOI: 10.1016/S0377-2217(00)00100-4
+  + Hore, S., Chatterjee, A. & Dewanji, A. (2018). Improving variable neighborhood
+    search to solve the traveling salesman problem. _Applied Soft Computing_, 68,
+    83–91. DOI: 10.1016/j.asoc.2018.03.048 #emph[(VNS — TSP)]
 
-  + Kennedy, J. & Eberhart, R. (1995). Particle swarm optimization. _Proc. IEEE Int.
-    Conf. on Neural Networks_, 1942–1948. DOI: 10.1109/ICNN.1995.488968
+  + He, Q. & Wang, L. (2007). An effective co-evolutionary particle swarm optimization
+    for constrained engineering design problems. _Engineering Applications of
+    Artificial Intelligence_, 20(1), 89–99. DOI: 10.1016/j.engappai.2006.03.003
+    #emph[(PSO — diseño de resorte)]
 
-  + Poli, R., Kennedy, J. & Blackwell, T. (2007). Particle swarm optimization: An
-    overview. _Swarm Intelligence_, 1(1), 33–57. DOI: 10.1007/s11721-007-0002-0
+  *Papers del método*
 
-  + Shi, Y. & Eberhart, R. (1998). A modified particle swarm optimizer.
-    _Proc. IEEE ICEC_, 69–73. DOI: 10.1109/ICEC.1998.699146
+  3. Mladenović, N. & Hansen, P. (1997). Variable neighborhood search. _Computers &
+     Operations Research_, 24(11), 1097–1100. DOI: 10.1016/S0305-0548(97)00031-2
+
+  4. Kennedy, J. & Eberhart, R. (1995). Particle swarm optimization. _Proc. IEEE Int.
+     Conf. on Neural Networks_, 1942–1948. DOI: 10.1109/ICNN.1995.488968
+
+  5. Poli, R., Kennedy, J. & Blackwell, T. (2007). Particle swarm optimization: An
+     overview. _Swarm Intelligence_, 1(1), 33–57. DOI: 10.1007/s11721-007-0002-0
+
+  6. Shi, Y. & Eberhart, R. (1998). A modified particle swarm optimizer.
+     _Proc. IEEE ICEC_, 69–73. DOI: 10.1109/ICEC.1998.699146
 ]
 
 // ── End Slide ───────────────────────────────────────────────
