@@ -305,22 +305,27 @@ PSO(función f, N partículas, T iteraciones):
 ]
 
 #slide(title: "Cómo PSO resuelve el problema — log paso a paso")[
-  El mejor diseño (`gbest`) va reduciendo el peso hasta volverse *válido* y casi
-  óptimo:
+  El mejor diseño (`gbest`) se vuelve *válido* muy pronto y luego va reduciendo el
+  peso hasta quedar casi en el óptimo:
 
   #code-block(title: "salida de python codes/pso_function.py")[
 ```text
-iter         d         D         N        peso   ¿válido?
-----------------------------------------------------------
-   0    0.5127    0.6543    8.2210    1.418900       no
-   1    0.1583    0.4921    9.7740    0.123540       no
-   5    0.0612    0.4011   10.9930    0.018470       sí
-  25    0.0531    0.3702   11.1480    0.013120       sí
-  99    0.0517    0.3567   11.2880    0.012670       sí
+iter         d         D         N        peso  ¿válido?
+------------------------------------------------------
+   0    0.0749    0.9840   12.6837    0.081117       no
+   1    0.0844    0.9015   14.5101    0.105985       sí
+   5    0.0681    0.6795    8.0655    0.031762       sí
+  10    0.0633    0.5811    9.8000    0.027446       sí
+  25    0.0533    0.3826   10.3372    0.013389       sí
+  50    0.0524    0.3744   10.3519    0.012716       sí
+  99    0.0524    0.3744   10.3222    0.012675       sí
+
+Mejor diseño: d=0.05241, D=0.37442, N=10.3222
+peso = 0.012675   (óptimo conocido del paper ≈ 0.012665)
 ```
   ]
-  #text(size: 15pt)[(Números de una corrida real con `seed = 42`; los exactos los
-  imprime el script.)]
+  #text(size: 15pt)[(Corrida real con `seed = 42`; reproducible con
+  `python codes/pso_function.py`.)]
 ]
 
 #img-left("figures/pso_variables.png")[
