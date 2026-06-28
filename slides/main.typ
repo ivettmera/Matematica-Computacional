@@ -1,8 +1,9 @@
 // ============================================================
-// clari-docs — Example Presentation
+// PC5 — Búsqueda de Vecindad Variable (VNS) y PSO
+// Matemática Computacional — UNI, Facultad de Ciencias
+// Compilar:  typst compile slides/main.typ slides/main.pdf
+// Las figuras las generan los scripts de codes/ (ver README).
 // ============================================================
-// This file showcases all four categories and the full
-// component library. Adjust parameters below to fit your needs.
 
 #import "@preview/clari-docs:0.1.0": *
 
@@ -40,362 +41,334 @@
 #overview-slide()
 
 // ============================================================
-// Section 1 — Slide Types
+// Sección 1 — Metaheurísticas
 // ============================================================
-#section-slide[Slide Types]
+#section-slide[¿Qué es una metaheurística?]
 
-// Standard slide with title
-#slide(title: "Standard Slide", outlined: true)[
-  The standard `slide` function is your workhorse.
-
-  - Use `title:` for a colored header bar
-  - Set `outlined: true` to register in the overview
-  - Use `subtitle:` for an optional sub-header
-
-  #callout(type: "tip")[
-    Combine `section-slide` + `slide(outlined: true)` to
-    build a navigable table of contents automatically.
-  ]
-]
-
-// Slide without title
-#slide[
-  A slide *without* a title gives you the full content area.
-
-  #cols[
-    #info-v(title: "Left Column")[
-      Great for side-by-side content, comparisons,
-      or image + text layouts.
-    ]
-  ][
-    #info-v(title: "Right Column")[
-      Use `#cols[...][...]` for equal-width columns,
-      or pass `columns: (2fr, 1fr)` for custom ratios.
-    ]
-  ]
-]
-
-// Focus slide
-#focus-slide[
-  Use `#focus-slide` for _key takeaways_.
-]
-
-// Blank slide
-#blank-slide[
-  A `#blank-slide` gives you an unadorned canvas.
-
-  Perfect for full-bleed images, diagrams, or any custom layout
-  you want to build from scratch without the header bar.
-]
-
-// ============================================================
-// Section 2 — Content Components
-// ============================================================
-#section-slide[Content Components]
-
-#slide(title: "Callout Boxes", outlined: true)[
-  #callout(type: "note")[This is a *note* callout — great for supplementary info.]
-  #callout(type: "tip")[This is a *tip* callout — use for best practices.]
-  #callout(type: "warning")[This is a *warning* callout — flag caution points.]
-  #callout(type: "important")[This is an *important* callout — must-know info.]
-]
-
-#slide(title: "More Callout Types")[
-  #callout(type: "danger")[This is a *danger* callout — critical errors.]
-  #callout(type: "success")[This is a *success* callout — positive outcomes.]
-
-  Callouts are great for drawing attention without losing context.
-]
-
-#slide(title: "Info Blocks")[
-  #info-v(title: "Vertical Info Block")[
-    The title sits on top in a colored bar.
-    Body content flows naturally below.
-  ]
-
-  #info-h(title: "Horizontal Info Block")[
-    The title is a compact left label.
-    Content stretches to the right — good for key-value style info.
-  ]
-]
-
-#slide(title: "Framed Boxes")[
-  #framed[A plain framed box — subtle background, rounded corners.]
-
-  #framed(title: "Framed with Title")[
-    A framed box with a colored title bar. Great for definitions,
-    important formulas, or highlighted notes.
-  ]
-
-  #highlight-box[
-    `#highlight-box` is the simplest highlight — no title, just color.
-  ]
-]
-
-#slide(title: "Code Blocks")[
-  #code-block(title: "hello.py")[
-```python
-def greet(name: str) -> str:
-    return f"Hello, {name}!"
-
-print(greet("World"))
-```
-  ]
-
-  #code-block(title: "slide.typ", theme: "light")[
-```typst
-#slide(title: "My Slide")[
-  - Point one
-  - Point two
-]
-```
-  ]
-]
-
-#slide(title: "Quotes & Definitions")[
-  #quote-block(author: "Donald Knuth", source: "The Art of Computer Programming")[
-    Beware of bugs in the above code; I have only proved it correct, not tried it.
-  ]
+#slide(title: "La idea en una frase", outlined: true)[
+  Muchos problemas reales (rutas, horarios, diseño) tienen *tantas soluciones
+  posibles* que es imposible probarlas todas con una computadora.
 
   #definition(
-    "Algorithm",
-    [A finite sequence of well-defined instructions for solving a class of problems.],
-  )
-]
-
-#slide(title: "Math Concept Boxes")[
-  #theorem(title: "Pythagorean Theorem", number: "1")[
-    In a right triangle with legs $a$, $b$ and hypotenuse $c$:
-    $ a^2 + b^2 = c^2 $
-  ]
-
-  #proof[
-    Consider a square with side $a + b$ and four congruent right triangles inside...
-    The area argument yields $c^2 = a^2 + b^2$. #sym.square
-  ]
-]
-
-#slide(title: "Lemmas & Corollaries")[
-  #lemma(title: "Triangle Inequality", number: "2")[
-    For any vectors $bold(u), bold(v)$:
-    $ norm(bold(u) + bold(v)) <= norm(bold(u)) + norm(bold(v)) $
-  ]
-
-  #corollary(title: "Norm Bound", number: "1")[
-    As a direct consequence, $norm(bold(u) - bold(v)) >= |norm(bold(u)) - norm(bold(v))|$.
-  ]
-]
-
-#slide(title: "Step Lists")[
-  #step-list(
-    [Import the package and configure `#show: clari-docs.with(...)`],
-    [Add a `#title-slide(...)` as your cover],
-    [Use `#section-slide[...]` to divide your content],
-    [Fill slides with content and components],
-    [Compile with `typst compile main.typ`],
-  )
-]
-
-#slide(title: "Comparison Layout")[
-  #comparison(
-    left-title:  "Pros",
-    right-title: "Cons",
-    [
-      - Fast compilation
-      - Typst is type-safe
-      - Clean, expressive syntax
-      - Great math support
-    ],
-    [
-      - Smaller ecosystem vs. LaTeX
-      - Some packages still maturing
-      - Limited IDE support (improving)
-    ],
-  )
-]
-
-#slide(title: "Data Tables")[
-  #data-table(
-    ("Model", "Accuracy", "F1 Score", "Latency"),
-    (
-      ("Baseline", "72.3%", "0.71", "12 ms"),
-      ("ResNet-50", "89.1%", "0.88", "45 ms"),
-      ("ViT-B/16", "91.5%", "0.91", "110 ms"),
-      ("Ours", "93.8%", "0.93", "38 ms"),
-    ),
-    caption: "Sample performance metrics",
-  )
-]
-
-// ============================================================
-// Section 3 — Image Layouts
-// ============================================================
-#section-slide[Image Layouts]
-
-#slide(title: "Image Layout Options", outlined: true)[
-  clari-docs provides five image placement modes:
-
-  #step-list(
-    [`#img-full(src)` — fills the entire slide],
-    [`#img-left(src)[content]` — image left, text right],
-    [`#img-right(src)[content]` — image right, text left],
-    [`#img-top(src)[content]` — image top, text below],
-    [`#img-bottom(src)[content]` — text above, image below],
+    "Metaheurística",
+    [Una receta general e inteligente para *buscar buenas soluciones* en un tiempo
+    razonable, aunque no garantice encontrar la óptima exacta.],
   )
 
-  Replace `src` with your image path (relative to `main.typ`).
-]
-
-// ============================================================
-// Section 4 — Math & Science
-// ============================================================
-#section-slide[Mathematics & Science]
-
-#slide(title: "Equation Display", outlined: true)[
-  Use `#math-eq` for a beautifully boxed display equation:
-
-  #math-eq(numbered: true)[$ E = m c^2 $]
-
-  #math-eq(numbered: true)[
-    $ integral_0^infinity e^(-x^2) dif x = sqrt(pi) / 2 $
-  ]
-]
-
-#slide(title: "Aligned Equations")[
-  Group related equations with `#math-aligned`:
-
-  #math-aligned(
-    [$ nabla dot bold(E) &= rho / epsilon_0 $],
-    [$ nabla dot bold(B) &= 0 $],
-    [$ nabla times bold(E) &= -(partial bold(B)) / (partial t) $],
-    [$ nabla times bold(B) &= mu_0 bold(J) + mu_0 epsilon_0 (partial bold(E)) / (partial t) $],
-  )
-]
-
-#slide(title: "Physics Equations")[
-  #phys-eq(
-    label: "Newton's Law of Gravitation",
-    unit:  "[N]",
-  )[$ F = G (m_1 m_2) / r^2 $]
-
-  #phys-eq(
-    label: "Schrödinger Equation",
-    derivation: true,
-  )[$ i ℏ (partial Psi) / (partial t) = hat(H) Psi $]
-]
-
-#slide(title: "Chemical Equations")[
-  #chem-eq(
-    [2H#sub[2] + O#sub[2]],
-    [2H#sub[2]O],
-    conditions: [Δ, catalyst],
-  )
-
-  #chem-eq(
-    [N#sub[2] + 3H#sub[2]],
-    [2NH#sub[3]],
-    arrow-type: "equilibrium",
-    conditions: [450°C, 200 atm, Fe],
-  )
-]
-
-#slide(title: "SI Values & Constants")[
-  Inline SI values with `#si-value`:
-
-  Speed of light: #si-value("299 792 458", "m·s⁻¹") \
-  Planck constant: #si-value("6.626 × 10⁻³⁴", "J·s", uncertainty: "±0.001 × 10⁻³⁴") \
-  Boltzmann constant: #si-value("1.380 649 × 10⁻²³", "J·K⁻¹")
-
-  #constants-table((
-    (symbol: [$c$],     name: "Speed of light",      value: [$2.998 times 10^8$], unit: "m·s⁻¹"),
-    (symbol: [$h$],     name: "Planck constant",     value: [$6.626 times 10^(-34)$], unit: "J·s"),
-    (symbol: [$k_B$],   name: "Boltzmann constant",  value: [$1.381 times 10^(-23)$], unit: "J·K⁻¹"),
-    (symbol: [$N_A$],   name: "Avogadro constant",   value: [$6.022 times 10^(23)$], unit: "mol⁻¹"),
-  ))
-]
-
-#slide(title: "Annotated Equations")[
-  #pin-eq(
-    [$ F = m dot a $],
-    [$F$ — net force applied to the object],
-    [$m$ — mass of the object],
-    [$a$ — resulting acceleration],
-  )
-]
-
-#slide(title: "Function Definitions")[
-  #function-def(
-    "f",
-    $RR^n$,
-    $RR$,
-  )[
-    $ f(bold(x)) = bold(w)^T bold(x) + b $
-    where $bold(w) in RR^n$ is the weight vector and $b in RR$ is the bias.
-  ]
-]
-
-#slide(title: "Calculus Display")[
-  #derivative-display($f$, $x$, order: 2,
-    label: "Second derivative")
-
-  #integral-display(
-    $f(x)$, var: $x$,
-    lower: $a$, upper: $b$,
-    label: "Definite integral",
-  )
-
-  #limit-display(
-    $(sin x) / x$,
-    $x$, $0$,
-    label: "Fundamental limit",
-  )
-]
-
-#slide(title: "Bar Chart Example")[
-  #bar-chart(
-    (
-      (label: "A", value: 85),
-      (label: "B", value: 92),
-      (label: "C", value: 71),
-      (label: "D", value: 96),
-      (label: "E", value: 78),
-    ),
-    x-label: "Category",
-    y-label: "Score (%)",
-  )
-]
-
-// ============================================================
-// Section 5 — Colour Themes
-// ============================================================
-#section-slide[Colour Themes]
-
-#slide(title: "Available Themes", outlined: true)[
-  Pass any theme name to `clari-docs.with(theme: ...)`:
+  Toda metaheurística equilibra dos fuerzas opuestas:
 
   #cols[
-    #step-list(
-      [`"ocean"` — deep blue (simple default)],
-      [`"midnight"` — navy (professional default)],
-      [`"forest"` — forest green],
-      [`"teal"` — teal (allrounder default)],
-      [`"sunset"` — deep red],
-    )
+    #info-v(title: "Exploración")[
+      Saltar a zonas nuevas del espacio de búsqueda para *no quedarse atrapado*
+      en una mala solución.
+    ]
   ][
-    #step-list(
-      [`"amber"` — warm amber],
-      [`"rose"` — rose/magenta],
-      [`"lavender"` — purple],
-      [`"slate"` — slate (math default)],
-      [`"charcoal"` — near-black],
-    )
+    #info-v(title: "Explotación")[
+      Afinar y mejorar la *solución que ya tenemos* mirando a su alrededor.
+    ]
+  ]
+]
+
+#slide(title: "Las dos que nos tocaron")[
+  #comparison(
+    left-title:  "VNS — Vecindad Variable",
+    right-title: "PSO — Enjambre de Partículas",
+    [
+      - Trabaja con *una* solución y la mejora.
+      - Cambia *el tamaño del salto* cuando se atasca.
+      - Para problemas *combinatorios*.
+      - La probamos en el *TSP* (Agente Viajero).
+    ],
+    [
+      - Trabaja con *muchas* soluciones a la vez.
+      - Se inspira en *bandadas de aves*.
+      - Para *funciones continuas*.
+      - La probamos en la *función Rastrigin*.
+    ],
+  )
+]
+
+// ============================================================
+// Sección 2 — VNS
+// ============================================================
+#section-slide[VNS — Búsqueda de Vecindad Variable]
+
+#slide(title: "El paper que resumimos", outlined: true)[
+  #info-h(title: "Referencia [1]")[
+    Mladenović, N. & Hansen, P. (1997). _Variable neighborhood search_.
+    Computers & Operations Research, 24(11), 1097–1100. \
+    DOI: 10.1016/S0305-0548(97)00031-2
   ]
 
-  Or pass any `rgb(...)` color directly!
+  *De qué trata, en simple:* la *búsqueda local* clásica mejora una solución mirando
+  solo vecinos cercanos, y por eso se queda atrapada en *óptimos locales*. La idea de
+  los autores es sencilla y poderosa: cuando te atascas, *cambia la definición de
+  "vecino"* a una más amplia y vuelve a buscar. Así lograron mejorar las soluciones
+  del TSP (mejoraron el algoritmo GENIUS).
+
+  #callout(type: "note")[
+    Apoyo teórico [2]: Hansen & Mladenović (2001), _EJOR_ 130(3), 449–467.
+    DOI: 10.1016/S0377-2217(00)00100-4
+  ]
+]
+
+#slide(title: "El problema: TSP (Agente Viajero)")[
+  *Problematización.* Un viajero debe visitar $n$ ciudades *exactamente una vez* y
+  volver al inicio, recorriendo *la menor distancia total* posible.
+
+  #cols(columns: (1.3fr, 1fr))[
+    - El número de rutas posibles es $(n-1)! / 2$.
+    - Con solo *20 ciudades* hay más de $10^16$ rutas: ni la computadora más rápida
+      las prueba todas.
+    - El TSP es *NP-difícil*: no se conoce ningún método exacto y rápido.
+    - Por eso usamos metaheurísticas: hallan rutas *muy buenas* sin revisarlas todas.
+  ][
+    #callout(type: "tip")[
+      Es un problema central en *computación*: logística, fabricación de chips,
+      secuenciación de ADN, ruteo de drones.
+    ]
+  ]
+]
+
+#slide(title: "Marco teórico: las piezas de VNS")[
+  #step-list(
+    [*Familia de vecindades* $N_1, N_2, dots, N_(k_max)$, de menor a mayor. En
+     nuestro código $N_k$ = "aplicar $k$ intercambios aleatorios de ciudades".],
+    [*Shaking (sacudida):* elegir un punto *al azar* dentro de $N_k$ para salir del
+     óptimo local. → es la *exploración*.],
+    [*Búsqueda local (2-opt):* desde ese punto, bajar al óptimo local más cercano
+     desarmando y reconectando aristas del tour. → es la *explotación*.],
+  )
+]
+
+#slide(title: "Marco teórico: el pseudocódigo")[
+  #code-block(title: "VNS básico")[
+```text
+VNS(solución inicial x, k_max):
+    x ← BúsquedaLocal(x)              // 2-opt
+    repetir hasta criterio de parada:
+        k ← 1
+        mientras k ≤ k_max:
+            x'  ← Shaking(x, k)       // salto aleatorio en N_k  (explora)
+            x'' ← BúsquedaLocal(x')   // 2-opt                   (explota)
+            si long(x'') < long(x):   // ¿mejoró?
+                x ← x'' ;  k ← 1      //   sí: nos movemos y k vuelve a 1
+            sino:
+                k ← k + 1             //   no: agrandamos la vecindad
+    devolver x
+```
+  ]
+  #callout(type: "important")[
+    Mientras mejora, intensifica cerca ($k=1$); cuando se atasca, diversifica
+    agrandando $k$.
+  ]
+]
+
+#img-left("figures/vns_tour_inicial.png")[
+  *Punto de partida*
+
+  Arrancamos con una ruta *aleatoria*: larga y con cruces.
+
+  VNS la irá *desenredando* poco a poco hasta dejarla corta y limpia.
+]
+
+#slide(title: "Cómo VNS resuelve el TSP — log paso a paso")[
+  Cada línea es una iteración: vemos la vecindad $k$, la longitud del candidato y si
+  lo aceptamos. Al aceptar, $k$ vuelve a 1; al fallar, $k$ crece.
+
+  #code-block(title: "salida de python codes/vns_tsp.py")[
+```text
+Tour inicial (tras 2-opt): longitud 3.8153
+iter  k     cand.  ¿mejora?
+------------------------------
+   1  1    4.0749   no, k+1
+   2  2    3.8886   no, k+1
+   3  3    3.7778  SÍ -> k=1
+   5  2    3.6816  SÍ -> k=1
+   7  2    3.6216  SÍ -> k=1
+  10  3    3.6007  SÍ -> k=1
+  17  2    3.5994  SÍ -> k=1
+  20  3    3.5759  SÍ -> k=1
+  25  5    3.5073  SÍ -> k=1   <- mejor encontrado
+   ...
+Longitud final: 3.5073
+```
+  ]
+]
+
+#slide(title: "Cómo VNS resuelve el TSP — resultado")[
+  #cols[
+    #image("figures/vns_tour_final.png", width: 100%)
+  ][
+    #image("figures/vns_convergencia.png", width: 100%)
+  ]
+  #align(center)[#text(size: 16pt)[
+    El tour final no tiene cruces y es mucho más corto: de $6.01$ (ruta aleatoria) a
+    $3.51$, un $42%$ menos. La longitud baja *a saltos* en cada mejora.
+  ]]
+]
+
+// ============================================================
+// Sección 3 — PSO
+// ============================================================
+#section-slide[PSO — Optimización por Enjambre de Partículas]
+
+#slide(title: "El paper que resumimos", outlined: true)[
+  #info-h(title: "Referencia [4]")[
+    Poli, R., Kennedy, J. & Blackwell, T. (2007). _Particle swarm optimization: An
+    overview_. Swarm Intelligence, 1(1), 33–57. \
+    DOI: 10.1007/s11721-007-0002-0
+  ]
+
+  *De qué trata, en simple:* es un artículo de revista que repasa el PSO, propuesto
+  por Kennedy y Eberhart en 1995. La inspiración es una *bandada de aves* buscando
+  comida: ninguna sabe dónde está, pero cada una se guía por *su mejor hallazgo* y por
+  *el mejor del grupo*. Juntas terminan convergiendo al objetivo.
+
+  #callout(type: "note")[
+    Original [3]: Kennedy & Eberhart (1995), DOI: 10.1109/ICNN.1995.488968.
+    Peso de inercia [5]: Shi & Eberhart (1998), DOI: 10.1109/ICEC.1998.699146.
+  ]
+]
+
+#slide(title: "El problema: minimizar una función")[
+  *Problematización.* En computación, muchísimas tareas se reducen a *minimizar una
+  función* $f(x)$: ajustar pesos de una red neuronal, calibrar un modelo, diseñar una
+  pieza. Buscamos el $x$ que da el valor más bajo.
+
+  #math-eq(numbered: true)[
+    $ f(x) = 10 n + sum_(i=1)^n (x_i^2 - 10 cos(2 pi x_i)) $
+  ]
+
+  #cols[
+    Usamos la *función Rastrigin*: está llena de *mínimos locales* (es "ondulada") y
+    su *mínimo global* está en el origen $x = (0,0)$, donde $f = 0$.
+  ][
+    #callout(type: "tip")[
+      Es el test ideal: si la metaheurística no se deja engañar por Rastrigin, sirve
+      para problemas reales difíciles.
+    ]
+  ]
+]
+
+#slide(title: "Marco teórico: las piezas de PSO")[
+  Cada *partícula* $i$ es una solución con *posición* $x_i$ y *velocidad* $v_i$.
+  El enjambre recuerda dos cosas:
+
+  #cols[
+    #info-v(title: "pbest")[
+      $p_i$: la mejor posición que la partícula $i$ visitó. → *memoria propia*.
+    ]
+  ][
+    #info-v(title: "gbest")[
+      $g$: la mejor posición de *todo* el enjambre. → *conocimiento social*.
+    ]
+  ]
+
+  En cada paso, la velocidad mezcla tres impulsos:
+
+  #pin-eq(
+    [$ v_i <- w v_i + c_1 r_1 (p_i - x_i) + c_2 r_2 (g - x_i) $],
+    [$w v_i$ — inercia: la partícula sigue su rumbo (explora)],
+    [$c_1 r_1 (p_i - x_i)$ — cognitivo: la atrae hacia su mejor personal],
+    [$c_2 r_2 (g - x_i)$ — social: la atrae hacia el mejor global],
+  )
+]
+
+#slide(title: "Marco teórico: el pseudocódigo")[
+  #code-block(title: "PSO")[
+```text
+PSO(función f, N partículas, T iteraciones):
+    inicializar posiciones x_i y velocidades v_i al azar
+    p_i ← x_i ;  g ← mejor de todos los p_i
+    repetir T veces:
+        para cada partícula i:
+            v_i ← w·v_i + c1·r1·(p_i − x_i) + c2·r2·(g − x_i)
+            x_i ← x_i + v_i
+            si f(x_i) < f(p_i):  p_i ← x_i     // mejor personal
+            si f(x_i) < f(g):    g  ← x_i      // mejor global
+    devolver g
+```
+  ]
+  #callout(type: "important")[
+    La inercia explora; la atracción a $p_i$ y $g$ explota. El enjambre se concentra
+    solo donde hay buenas soluciones.
+  ]
+]
+
+#slide(title: "Cómo PSO resuelve el problema — log paso a paso")[
+  El mejor global (`gbest`) se acerca al origen y su valor cae hacia 0:
+
+  #code-block(title: "salida de python codes/pso_function.py")[
+```text
+iter              gbest_x      f(gbest)
+------------------------------------------
+   0   (+2.051, -1.921)       9.59640
+   1   (+2.136, -0.975)       9.08227
+   2   (+1.087, -1.058)       4.43517
+   5   (+0.921, -1.060)       3.90015
+  20   (+1.030, +0.014)       1.28171
+  59   (-0.000, -0.000)       0.00000   <- óptimo global
+```
+  ]
+]
+
+#slide(title: "Cómo PSO resuelve el problema — el enjambre en acción")[
+  #image("figures/pso_enjambre_iter.png", width: 100%)
+  #align(center)[#text(size: 16pt)[
+    Las partículas (rojo) parten dispersas y se concentran en el mínimo global
+    (estrella blanca) conforme avanzan las iteraciones.
+  ]]
+]
+
+#img-right("figures/pso_convergencia.png")[
+  *Convergencia*
+
+  El valor del mejor global desciende rápidamente hacia 0, el mínimo de Rastrigin.
+
+  PSO atravesó los muchos mínimos locales sin quedarse atrapado, gracias a que el
+  enjambre comparte información.
+]
+
+// ============================================================
+// Sección 4 — Cierre
+// ============================================================
+#section-slide[Conclusiones]
+
+#slide(title: "Conclusiones", outlined: true)[
+  #step-list(
+    [Las *metaheurísticas* atacan problemas sin solución exacta rápida, equilibrando
+     *exploración* y *explotación*.],
+    [*VNS* (una solución, vecindades que crecen) desenredó el *TSP*: de una ruta
+     aleatoria con cruces a una corta y limpia, cambiando de vecindad al atascarse.],
+    [*PSO* (un enjambre que comparte información) minimizó la *Rastrigin* pese a sus
+     muchos mínimos locales, llegando al óptimo global.],
+    [Nacen de ideas muy distintas —*sistemática* vs. *colectiva*— pero ambas son
+     simples de programar y sorprendentemente efectivas.],
+  )
+]
+
+#slide(title: "Referencias")[
+  #set text(size: 15pt)
+  + Mladenović, N. & Hansen, P. (1997). Variable neighborhood search.
+    _Computers & Operations Research_, 24(11), 1097–1100.
+    DOI: 10.1016/S0305-0548(97)00031-2
+
+  + Hansen, P. & Mladenović, N. (2001). Variable neighborhood search: Principles and
+    applications. _European Journal of Operational Research_, 130(3), 449–467.
+    DOI: 10.1016/S0377-2217(00)00100-4
+
+  + Kennedy, J. & Eberhart, R. (1995). Particle swarm optimization. _Proc. IEEE Int.
+    Conf. on Neural Networks_, 1942–1948. DOI: 10.1109/ICNN.1995.488968
+
+  + Poli, R., Kennedy, J. & Blackwell, T. (2007). Particle swarm optimization: An
+    overview. _Swarm Intelligence_, 1(1), 33–57. DOI: 10.1007/s11721-007-0002-0
+
+  + Shi, Y. & Eberhart, R. (1998). A modified particle swarm optimizer.
+    _Proc. IEEE ICEC_, 69–73. DOI: 10.1109/ICEC.1998.699146
 ]
 
 // ── End Slide ───────────────────────────────────────────────
-#end-slide(title: "Thank You")[
-  Questions? \
-  #link("https://github.com/Joe02exe/clari-slides")
+#end-slide(title: "¡Gracias!")[
+  Código y figuras: `codes/vns_tsp.py` · `codes/pso_function.py`
 ]
